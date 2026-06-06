@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Buyer Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <h1>Buyer Agent</h1>
+            </div>
+            <div class="status">
+                <span class="status-dot"></span> Online & Connected
+            </div>
+        </header>
+
+        <main class="chat-container" id="chat-container">
+            <div class="message system-message">
+                <div class="bubble">
+                    Hello! I'm your autonomous AI Buyer Agent. Let me know what you're looking for, and I'll find the best deal for you and prepare a proposal.
+                </div>
+            </div>
+        </main>
+
+        <footer class="input-area">
+            <form id="chat-form">
+                <input type="text" id="user-input" placeholder="e.g. I need 5 blue pens for my office..." autocomplete="off" required>
+                <button type="submit" id="send-btn">Send</button>
+            </form>
+        </footer>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
