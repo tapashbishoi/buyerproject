@@ -1,22 +1,53 @@
-# AI Buyer Agent
+# AI Buyer Agent (Smart Ordering & Negotiation)
 
-A modern, autonomous AI Buyer Agent built with **Node.js, Express, and the Gemini API**. This agent connects to an external seller's Model Context Protocol (MCP) server to dynamically load tools, browse catalogues, check inventory, and negotiate prices on behalf of the user.
+A modern, autonomous AI Buyer Agent built with **Node.js, TypeScript, Express, and Google's Agent Development Kit (ADK)**. This agent connects to an external seller's Model Context Protocol (MCP) server to dynamically load tools, check buyer profiles, browse catalogues, evaluate shipping costs, and negotiate prices on behalf of the user.
 
-## Features
+## 💼 Business Case
 
-- **Dynamic Tool Loading:** Automatically fetches and converts JSON Schema tools from the Seller's MCP server.
-- **Autonomous Negotiation:** The agent autonomously haggles for the best price using the `negotiate_price` and `accept_counter_offer` tools.
-- **Real-Time UI Streaming:** Watch the agent's thought process (🧠) and actions (🔧) stream live in the Web UI via Server-Sent Events (SSE).
-- **Proposal Approval Workflow:** Once the agent finds the best deal, it generates a beautiful Proposal Card for the user to "Approve & Buy" with 1 click.
-- **Dual Interface:** Run it via the simple terminal CLI or the rich Web UI.
+In a B2B or high-volume B2C procurement environment, purchasing teams spend countless hours manually:
+1. Browsing supplier catalogues and checking inventory availability.
+2. Cross-referencing fulfillment Distribution Centers (DCs) and calculating landed costs (product + shipping).
+3. Engaging in back-and-forth negotiations with suppliers for volume discounts.
+4. Managing profile registration and contract approvals.
 
-## Prerequisites
+**The Solution:** The AI Buyer Agent acts as an autonomous procurement assistant. It completely automates the discovery, logistics evaluation, and negotiation phases. By delegating routine procurement tasks to an AI, businesses can drastically reduce operational overhead, secure better pricing through consistent, data-driven haggling, and allow human procurement officers to focus solely on strategic decision-making and final approvals.
 
+## 🏗️ Component AI Stack
+
+- **Framework:** [Google Agent Development Kit (@google/adk)](https://github.com/google/adk-js)
+  - Provides enterprise-grade agent orchestration, replacing manual API loops with a robust, strictly-typed `LlmAgent` and `InMemoryRunner`.
+- **Model:** Google Gemini (`gemini-2.5-flash`)
+  - Acts as the reasoning engine to evaluate trade-offs (e.g., shipping cost vs. unit discount) and formulate negotiation counter-offers.
+- **Protocol:** Model Context Protocol (MCP) via `@modelcontextprotocol/sdk`
+  - Utilizes `StreamableHTTPConnectionParams` to securely and dynamically discover and execute the seller's REST API tools over HTTP.
+- **Backend:** Node.js, Express, TypeScript, Zod
+- **Frontend:** Vanilla JS with Server-Sent Events (SSE) for real-time streaming of the agent's thought process.
+
+## 🔄 High-Level Flow (Smart Ordering)
+
+When a user requests to buy an item (e.g., "I want to buy 10 blue pens and negotiate a discount"), the agent executes the following autonomous flow:
+
+1. **Identity & Registration (`get_my_profile`, `register_buyer`)**
+   - The agent asks for the user's email to check if they are an existing customer in the seller's system.
+   - If missing, it dynamically requests shipping details and registers the buyer.
+2. **Product Discovery (`browse_catalogue`)**
+   - The agent queries the seller's catalogue to find the requested items, verifying stock and list prices.
+3. **Logistics Evaluation (`check_delivery_options`)**
+   - The agent queries the seller's fulfillment system to find the nearest Distribution Center (DC), delivery timelines, and associated shipping costs.
+4. **Autonomous Negotiation (`negotiate_price`)**
+   - Armed with the list price and shipping costs, the agent haggles with the seller's AI to lower the unit cost, optimizing for the lowest total "Landed Cost".
+5. **Proposal & Human-in-the-Loop Approval**
+   - The agent pauses and presents a final `PROPOSAL` to the user in the UI, detailing the negotiated discount, shipping cost, and total amount.
+6. **Execution (`accept_counter_offer`, `place_order`)**
+   - Only after the user clicks "Approve" does the agent securely execute the final binding contract tools.
+
+## 🚀 Installation & Usage
+
+### Prerequisites
 - Node.js (v18+)
 - A Gemini API Key (`GEMINI_API_KEY`)
 
-## Installation
-
+### Setup
 1. Clone the repository.
 2. Install dependencies:
    ```bash
@@ -29,23 +60,17 @@ A modern, autonomous AI Buyer Agent built with **Node.js, Express, and the Gemin
    PORT=4000
    ```
 
-## Usage
-
-### 1. Web UI (Recommended)
-Start the express server:
+### Running the App
+Start the express server using the updated npm scripts:
 ```bash
 npm start
+# or 
+npm run server
 ```
+
 Open your browser to `http://localhost:4000` and start chatting with your autonomous agent! 
-Example prompt: *"I want to buy 10 blue pens. Can you negotiate a 20% discount for me?"*
 
-### 2. Terminal CLI
-If you prefer a fast, text-only interface, run:
-```bash
-node index.js
-```
-
-## Architecture
-- **`server.js`**: Express backend handling static files and the `/api/chat/stream` SSE endpoint.
-- **`agent.js`**: Core AI logic. Manages the Gemini SDK `ChatSession`, fetches MCP tools, handles function calling loops, and triggers `onProgress` callbacks.
+### Architecture Files
+- **`server.ts`**: Express backend handling static files and the `/api/chat/stream` SSE endpoint.
+- **`agent.ts`**: Core AI logic containing the `BuyerAgent` class. Instantiates the ADK `LlmAgent`, `MCPToolset`, and `InMemoryRunner`.
 - **`public/app.js`**: Frontend logic managing the `EventSource` connection to render the negotiation stream and proposal UI.
