@@ -74,3 +74,20 @@ Open your browser to `http://localhost:4000` and start chatting with your autono
 - **`server.ts`**: Express backend handling static files and the `/api/chat/stream` SSE endpoint.
 - **`agent.ts`**: Core AI logic containing the `BuyerAgent` class. Instantiates the ADK `LlmAgent`, `MCPToolset`, and `InMemoryRunner`.
 - **`public/app.js`**: Frontend logic managing the `EventSource` connection to render the negotiation stream and proposal UI.
+
+## 🛣️ Road to Production (Enterprise Readiness)
+
+While the migration to the Google Agent Development Kit (ADK) elevated the architecture to an enterprise standard, taking this application to a live production environment requires implementing the following extensions:
+
+1. **Persistent State Management:** 
+   - *Current:* We are using the ADK's `InMemoryRunner`, meaning conversation history is lost if the Node process restarts. 
+   - *Next Step:* Swap `InMemoryRunner` for the ADK's `DatabaseSessionService` (or `VertexAiSessionService`) to persist chat histories in PostgreSQL/Redis, allowing horizontal scaling across multiple servers.
+2. **Authentication & Identity:** 
+   - *Current:* The backend assumes the user is inherently authorized.
+   - *Next Step:* Implement an identity provider (e.g., Auth0, Azure AD). The ADK natively supports `AuthProviderRegistry` to securely pass authenticated OAuth/JWT tokens down to the Seller's MCP server.
+3. **Resilience & Fallbacks:**
+   - *Current:* Network errors from the MCP server will propagate up as exceptions.
+   - *Next Step:* Utilize the ADK's `PluginManager.runOnModelErrorCallback` to implement automated retry logic and circuit breakers for robust network handling.
+4. **Strict Guardrails:**
+   - *Current:* We rely on the MCP schema validation and strict prompt engineering.
+   - *Next Step:* Write an ADK `BeforeToolCallback` plugin to intercept tool calls *before* they are sent to the MCP server. This middle-layer can enforce strict business policies (e.g., rejecting any `quantity < 0` or preventing out-of-policy discounts) natively within the agent loop.
