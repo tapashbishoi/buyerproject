@@ -52,7 +52,7 @@ app.get('/api/chat/stream', async (req, res) => {
   };
 
   try {
-    const reply = await agent.chat(message, onProgress);
+    const reply = await agent.chat('user-1', 'session-1', message as string, onProgress);
     
     let isProposal = false;
     let parsedReply = reply;

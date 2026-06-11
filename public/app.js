@@ -45,6 +45,16 @@ function addProposalCard(proposal) {
         `;
     });
 
+    let shippingHtml = '';
+    if (proposal.shipping_cost !== undefined) {
+        shippingHtml = `
+            <div class="proposal-item" style="color: #6a0dad; font-style: italic; border-top: 1px dashed #e0d0f0; margin-top: 8px; padding-top: 8px;">
+                <span>🚚 Shipping (${proposal.delivery_days || 'Standard'})</span>
+                <span>$${proposal.shipping_cost}</span>
+            </div>
+        `;
+    }
+
     // Make proposal JSON safe for button click
     const safeProposalStr = JSON.stringify(proposal).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
 
@@ -55,6 +65,7 @@ function addProposalCard(proposal) {
             </div>
             <div class="proposal-items">
                 ${itemsHtml}
+                ${shippingHtml}
             </div>
             <div class="proposal-total">
                 <span>Total Amount:</span>
